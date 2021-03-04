@@ -39,7 +39,7 @@ public class Item {
 	}
 
 	public void setBids(ArrayList<Bid> bids) {
-		bids = bids;
+		this.bids = bids;
 	}
 
 	public String getName() {
