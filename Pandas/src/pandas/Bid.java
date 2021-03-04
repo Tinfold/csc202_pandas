@@ -52,5 +52,4 @@ public class Bid {
 		return cust.toString() + " || " + nf.format(bid);
 	}
 	
-	
 }
