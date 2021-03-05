@@ -10,7 +10,12 @@ public class Customer
 	private String name;
 	private double money;
 	private ArrayList<Bid> bids = new ArrayList<Bid>();
+	private String password;
+	private String userName;
 	
+	
+	
+
 	public Customer()
 	{
 		custID = currentCustID;
@@ -19,8 +24,25 @@ public class Customer
 	
 	public Customer(String name)
 	{
+		this.name=name;
 		custID = currentCustID;
 		currentCustID++;
+	}
+	
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	public String getUserName() {
+		return userName;
+	}
+
+	public void setUserName(String userName) {
+		this.userName = userName;
 	}
 	
 	public String toString()

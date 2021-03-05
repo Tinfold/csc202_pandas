@@ -49,7 +49,7 @@ public class Bid {
 	
 	public String toString() {
 		NumberFormat nf = NumberFormat.getCurrencyInstance();
-		return cust.toString() + " || " + nf.format(bid);
+		return cust.getName() + " || " + nf.format(bid);
 	}
 	
 }
