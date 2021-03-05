@@ -11,8 +11,18 @@ public class JavaSales {
 		ArrayList<Item> paint = new ArrayList<>();
 		ArrayList<Customer> clients = new ArrayList<>();
 		
-		
-
+		while (true) {
+			int selection=mainMenu();
+			if (selection==1) {
+				auctionSetup(paint);
+			}
+			else if (selection==2) {
+				
+			}
+			else if (selection==3) {
+				adminMenu();
+			}
+		}
 	}
 
 	public static void auctionSetup(ArrayList<Item> p) {		
