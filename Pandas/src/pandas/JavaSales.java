@@ -12,8 +12,6 @@ public class JavaSales {
 		ArrayList<Item> paint = new ArrayList<>();
 		ArrayList<Customer> clients = new ArrayList<>();
 		
-		String adminPassword="password";
-		
 		Customer testCustomer=new Customer("John Doe");
 		testCustomer.setPassword("password");
 		testCustomer.setMoney(99999);
@@ -25,114 +23,20 @@ public class JavaSales {
 			int selection=mainMenu();
 			if (selection==1) {
 				auctionSetup(paint);
+				System.out.println("Data was loaded");
 			}
 			else if (selection==2) {
-				
+				System.out.println("Not yet implemented");
 			}
 			else if (selection==3) {
-				System.out.println("Please input the admin password.");
-				Scanner scan = new Scanner(System.in);
-				if (scan.nextLine().equals(adminPassword)) {
-					int selection2=0;
-					while(selection2!=6) {
-						selection2=adminMenu();
-					};
-				}
-				else {
-					System.out.println("Invalid password.");
-				}
-				
+				admin(paint,clients);
 			}
 			else if (selection==4) {
-				System.out.println("Please input your username.");
-				Scanner scan = new Scanner(System.in);
-				String userName=scan.nextLine();
-				System.out.println("Please input your password.");
-				String password=scan.nextLine();
-				
-				boolean foundMatch=false;
-				Customer customer = null;
-				
-				for (int i=0;i<clients.size();i++) {
-					if (clients.get(i).getUserName().equals(userName) &&
-						clients.get(i).getPassword().equals(password)) {
-						foundMatch=true;
-						customer=clients.get(i);
-						break;
-					}
-				}
-				
-				if(foundMatch) {
-					int selection3=0;
-					while (selection3!=5) {
-						selection3=custMenu();
-						if (selection3==3) {
-							System.out.println("What item would you like to bid on?");
-							for (int i=0;i<paint.size();i++) {
-								System.out.println(
-									(i+1) + ") " + paint.get(i).getName()
-								);
-							}
-							int paintSelection=scan.nextInt();
-							
-							if (paintSelection>0 && paintSelection<paint.size()+1) {
-								Item painting=paint.get(paintSelection-1);
-								ArrayList<Bid> uniqueCustomerBids = new ArrayList<Bid>();
-								
-								for (int i=0;i<painting.getBids().size();i++) {
-									if (painting.getBids().get(i).getCust().getCustID()==customer.getCustID()) {
-										uniqueCustomerBids.add(painting.getBids().get(i));
-									}
-								}
-								
-								String bidText="No bid";
-								
-								if (uniqueCustomerBids.size()>0) {
-									bidText="" + uniqueCustomerBids.get(uniqueCustomerBids.size()-1).getBid();
-								}
-	
-								System.out.println("Bid Menu:");
-		
-								System.out.println("Your Current Bid: " + bidText);
-								System.out.println("---------------------------------------------");
-								System.out.println("Current highest bid on item:");
-								
-								double minBid=painting.getMinimumBid();
-								if (painting.getBids().size()>0) {
-									Bid highestBid=painting.getBids().get(painting.getBids().size()-1);
-									System.out.println(highestBid.toString());
-									
-									System.out.println("---------------------------------------------");
-									System.out.println("You must bid at least " + 
-									NumberFormat.getCurrencyInstance().format(highestBid.getBid() + painting.getIncrement()));
-									minBid=highestBid.getBid()+painting.getIncrement();
-								}
-								else {
-									System.out.println("You must bid at least " + painting.getMinimumBid());
-								}
-								System.out.println("Would you like to make a bid on this item?");
-								
-								System.out.println("1) Make bid on item");
-								System.out.println("2) Return to customer menu");
-								
-								int bidSelection=scan.nextInt();
-								if (bidSelection==1) {
-									System.out.println("Enter a legal bid value:");
-									double myBid=scan.nextDouble();
-									if (myBid>=minBid){
-										painting.addBid(new Bid(customer,myBid,9999999)); // What is "maxBid" for again?
-										System.out.println("Bid successful!");
-									}
-									else {
-										System.out.println("You must bid at least " + 
-										NumberFormat.getCurrencyInstance().format(minBid));
-									}
-								}
-								
-							}
-						}
-					}
-				}
+				customer(paint,clients);
+			}
+			else if(selection == 5) {
+				System.out.println("Thanks for visiting our Auction House");
+				System.exit(0);
 			}
 		}
 	}
@@ -238,5 +142,114 @@ public class JavaSales {
 				System.out.println("You did not enter a valid selection");
 				return 0;
 		
+	}
+	
+	public static void admin(ArrayList<Item> paint, ArrayList<Customer> clients) {
+		String adminPassword="password";
+		System.out.println("Please input the admin password.");
+		Scanner scan = new Scanner(System.in);
+		if (scan.nextLine().equals(adminPassword)) {
+			int selection2=0;
+			while(selection2!=6) {
+				selection2=adminMenu();
+			};
+		}
+		else {
+			System.out.println("Invalid password.");
+		}
+	}
+
+	public static void customer(ArrayList<Item> paint, ArrayList<Customer> clients) {
+		NumberFormat nf = NumberFormat.getCurrencyInstance();
+		System.out.println("Please input your username.");
+		Scanner scan = new Scanner(System.in);
+		String userName=scan.nextLine();
+		System.out.println("Please input your password.");
+		String password=scan.nextLine();
+		
+		boolean foundMatch=false;
+		Customer customer = null;
+		
+		for (int i=0;i<clients.size();i++) {
+			if (clients.get(i).getUserName().equals(userName) &&
+				clients.get(i).getPassword().equals(password)) {
+				foundMatch=true;
+				customer=clients.get(i);
+				break;
+			}
+		}
+		
+		if(foundMatch) {
+			int selection3=0;
+			while (selection3!=5) {
+				selection3=custMenu();
+				if (selection3==3) {
+					System.out.println("What item would you like to bid on?");
+					for (int i=0;i<paint.size();i++) {
+						System.out.println(
+							(i+1) + ") " + paint.get(i).getName()
+						);
+					}
+					int paintSelection=scan.nextInt();
+					
+					if (paintSelection>0 && paintSelection<paint.size()+1) {
+						Item painting=paint.get(paintSelection-1);
+						ArrayList<Bid> uniqueCustomerBids = new ArrayList<Bid>();
+						
+						for (int i=0;i<painting.getBids().size();i++) {
+							if (painting.getBids().get(i).getCust().getCustID()==customer.getCustID()) {
+								uniqueCustomerBids.add(painting.getBids().get(i));
+							}
+						}
+						
+						String bidText="No bid";
+						
+						if (uniqueCustomerBids.size()>0) {
+							bidText="" + nf.format(uniqueCustomerBids.get(uniqueCustomerBids.size()-1).getBid());
+						}
+
+						System.out.println("Bid Menu:");
+
+						System.out.println("Your Current Bid: " + bidText);
+						System.out.println("---------------------------------------------");
+						System.out.println("Current highest bid on item:");
+						
+						double minBid=painting.getMinimumBid();
+						if (painting.getBids().size()>0) {
+							Bid highestBid=painting.getBids().get(painting.getBids().size()-1);
+							System.out.println(highestBid.toString());
+							
+							System.out.println("---------------------------------------------");
+							System.out.println("You must bid at least " + 
+							NumberFormat.getCurrencyInstance().format(highestBid.getBid() + painting.getIncrement()));
+							minBid=highestBid.getBid()+painting.getIncrement();
+						}
+						else {
+							System.out.println("You must bid at least " + nf.format(painting.getMinimumBid()));
+						}
+						System.out.println("Would you like to make a bid on this item?");
+						
+						System.out.println("1) Make bid on item");
+						System.out.println("2) Return to customer menu");
+						
+						int bidSelection=scan.nextInt();
+						if (bidSelection==1) {
+							System.out.println("Enter a legal bid value:");
+							double myBid=scan.nextDouble();
+							if (myBid>=minBid){
+								painting.addBid(new Bid(customer,myBid,9999999)); // What is "maxBid" for again?
+								System.out.println("Bid successful!");
+							}
+							else {
+								System.out.println("You must bid at least " + 
+								NumberFormat.getCurrencyInstance().format(minBid));
+							}
+						}
+						
+					}
+				}
+			}
+		}
+	
 	}
 }
