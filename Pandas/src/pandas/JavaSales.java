@@ -350,4 +350,10 @@ public class JavaSales {
 		
 		return new Item(name, minBid, increment);
 	}
+	
+	//overload for junit test
+	public static Item newAuction(String name, double minBid, double increment)
+	{		
+		return new Item(name, minBid, increment);
+	}
 }
