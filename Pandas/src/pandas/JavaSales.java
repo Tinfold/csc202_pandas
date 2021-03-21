@@ -29,7 +29,7 @@ public class JavaSales {
 			} else if (selection == 3) {
 				boolean sLogin = attemptAdminLogIn(adminPassword);
 				if (sLogin) {
-					adminMenu();
+					adminMenu(paint, clients);
 				}
 			} else if (selection == 4) {
 				custLMenu(clients, paint);
@@ -113,7 +113,7 @@ public class JavaSales {
 		}
 	}
 
-	public static void adminMenu() {
+	public static void adminMenu(ArrayList<Item> paint, ArrayList<Customer> clients) {
 		Scanner scan = new Scanner(System.in);
 
 		System.out.println("Please enter the number that corresponds with the action you would like to perform");
@@ -133,11 +133,12 @@ public class JavaSales {
 			}
 			if (select == 1)
 			{
-				
+				listAuctions(paint);
 			}
 			else if(select == 2)
 			{
-				
+				Item item = selectAuction(paint);
+				item.checkBiddingHistory();
 			}
 			else if(select == 3)
 			{
@@ -149,7 +150,11 @@ public class JavaSales {
 			}
 			else if(select == 5)
 			{
-				
+				Item item = newAuction();
+				if(item != null)
+				{
+					paint.add(item);
+				}
 			}
 			else if(select != 6)
 			{
@@ -247,64 +252,102 @@ public class JavaSales {
 	public static void bid(ArrayList<Item> paint, Customer cust)
 	{
 		Scanner scan = new Scanner(System.in);
-		System.out.println("What item would you like to bid on?");
+
+		System.out.println("Select an item to bid on:");
+		Item painting = selectAuction(paint);
+		ArrayList<Bid> uniqueCustomerBids = new ArrayList<Bid>();
+
+		for (int i = 0; i < painting.getBids().size(); i++) {
+			if (painting.getBids().get(i).getCust().getCustID() == cust.getCustID()) {
+				uniqueCustomerBids.add(painting.getBids().get(i));
+			}
+		}
+
+		String bidText = "No bid";
+
+		if (uniqueCustomerBids.size() > 0) {
+			bidText = "" + uniqueCustomerBids.get(uniqueCustomerBids.size() - 1).getBid();
+		}
+
+		System.out.println("Bid Menu:");
+
+		System.out.println("Your Current Bid: " + bidText);
+		System.out.println("---------------------------------------------");
+		System.out.println("Current highest bid on item:");
+
+		double minBid = painting.getMinimumBid();
+		if (painting.getBids().size() > 0) {
+			Bid highestBid = painting.getBids().get(painting.getBids().size() - 1);
+			System.out.println(highestBid.toString());
+
+			System.out.println("---------------------------------------------");
+			System.out.println("You must bid at least " + NumberFormat.getCurrencyInstance()
+					.format(highestBid.getBid() + painting.getIncrement()));
+			minBid = highestBid.getBid() + painting.getIncrement();
+		} else {
+			System.out.println("You must bid at least " + painting.getMinimumBid());
+		}
+		System.out.println("Would you like to make a bid on this item?");
+
+		System.out.println("1) Make bid on item");
+		System.out.println("2) Return to customer menu");
+
+		int bidSelection = scan.nextInt();
+		if (bidSelection == 1) {
+			System.out.println("Enter a legal bid value:");
+			double myBid = scan.nextDouble();
+			if (myBid >= minBid) {
+				painting.addBid(new Bid(cust, myBid, 9999999)); // What is "maxBid" for
+																	// again?
+				System.out.println("Bid successful!");
+			} else {
+				System.out.println("You must bid at least "
+						+ NumberFormat.getCurrencyInstance().format(minBid));
+			}
+		}
+	}
+	
+	public static void listAuctions(ArrayList<Item> paint)
+	{
+		for (int i = 0; i < paint.size(); i++) {
+			System.out.println(paint.get(i).toString());
+		}
+	}
+	
+	public static Item selectAuction(ArrayList<Item> paint)
+	{
+		Scanner scan = new Scanner(System.in);
+		System.out.println("Choose an item:");
 		for (int i = 0; i < paint.size(); i++) {
 			System.out.println((i + 1) + ") " + paint.get(i).getName());
 		}
 		int paintSelection = scan.nextInt();
 
 		if (paintSelection > 0 && paintSelection < paint.size() + 1) {
-			Item painting = paint.get(paintSelection - 1);
-			ArrayList<Bid> uniqueCustomerBids = new ArrayList<Bid>();
-
-			for (int i = 0; i < painting.getBids().size(); i++) {
-				if (painting.getBids().get(i).getCust().getCustID() == cust.getCustID()) {
-					uniqueCustomerBids.add(painting.getBids().get(i));
-				}
-			}
-
-			String bidText = "No bid";
-
-			if (uniqueCustomerBids.size() > 0) {
-				bidText = "" + uniqueCustomerBids.get(uniqueCustomerBids.size() - 1).getBid();
-			}
-
-			System.out.println("Bid Menu:");
-
-			System.out.println("Your Current Bid: " + bidText);
-			System.out.println("---------------------------------------------");
-			System.out.println("Current highest bid on item:");
-
-			double minBid = painting.getMinimumBid();
-			if (painting.getBids().size() > 0) {
-				Bid highestBid = painting.getBids().get(painting.getBids().size() - 1);
-				System.out.println(highestBid.toString());
-
-				System.out.println("---------------------------------------------");
-				System.out.println("You must bid at least " + NumberFormat.getCurrencyInstance()
-						.format(highestBid.getBid() + painting.getIncrement()));
-				minBid = highestBid.getBid() + painting.getIncrement();
-			} else {
-				System.out.println("You must bid at least " + painting.getMinimumBid());
-			}
-			System.out.println("Would you like to make a bid on this item?");
-
-			System.out.println("1) Make bid on item");
-			System.out.println("2) Return to customer menu");
-
-			int bidSelection = scan.nextInt();
-			if (bidSelection == 1) {
-				System.out.println("Enter a legal bid value:");
-				double myBid = scan.nextDouble();
-				if (myBid >= minBid) {
-					painting.addBid(new Bid(cust, myBid, 9999999)); // What is "maxBid" for
-																		// again?
-					System.out.println("Bid successful!");
-				} else {
-					System.out.println("You must bid at least "
-							+ NumberFormat.getCurrencyInstance().format(minBid));
-				}
-			}
+			return paint.get(paintSelection - 1);
 		}
+		else
+		{
+			System.out.println("That is not a valid selection.");
+			return null;
+		}
+	}
+	
+	public static void listCompletedAuctions()
+	{
+		
+	}
+		
+	public static Item newAuction()
+	{
+		Scanner scan = new Scanner(System.in);
+		System.out.println("Input the name of the item:");
+		String name = scan.nextLine();
+		System.out.println("Input the minimum bid:");
+		double minBid = scan.nextDouble();
+		System.out.println("Input the increment:");
+		double increment = scan.nextDouble();
+		
+		return new Item(name, minBid, increment);
 	}
 }
