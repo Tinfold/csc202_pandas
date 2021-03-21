@@ -22,9 +22,12 @@ public class Customer
 		currentCustID++;
 	}
 	
-	public Customer(String name)
+	public Customer(String name, double money, String userName, String password)
 	{
 		this.name=name;
+		this.money = money;
+		this.userName = userName;
+		this.password = password;
 		custID = currentCustID;
 		currentCustID++;
 	}
@@ -62,9 +65,24 @@ public class Customer
 
 	public void listBids()
 	{
+		if(bids.isEmpty())
+		{
+			System.out.println("You have no bids.");
+		}
+		else
+		{
+			for(int i = 0; i < bids.size(); i++)
+			{
+				System.out.println(bids.get(i).toString());
+			}
+		}
+	}
+	
+	public void listWinningBids()
+	{
 		for(int i = 0; i < bids.size(); i++)
 		{
-			System.out.println(bids.get(i).toString());
+			
 		}
 	}
 	

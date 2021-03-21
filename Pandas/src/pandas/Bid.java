@@ -16,7 +16,8 @@ public class Bid {
 	public Bid(Customer cust, double bid, double maxBid) {
 		this.cust = cust;
 		this.bid = bid;
-		this.maxBid = maxBid;			
+		this.maxBid = maxBid;
+		cust.addBid(this);
 	}
 
 	public void setCust(Customer cust) {
