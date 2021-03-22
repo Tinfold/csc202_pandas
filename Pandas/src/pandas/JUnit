@@ -1,0 +1,11 @@
+For the JavaSales unit test, in the bid method test make sure to bid a valid amount.
+The test makes sure that a bid has been added to the item.
+
+The rest of the tests are ran autonomously.
+
+So far, we are just testing some basic things to ensure basic functionality.
+Once we have a bigger code base we will have more tests.
+
+Future planned tests: data validation/ exception tests on some input methods,
+and more tests on menu items. Probably some tests on our future "time simulation"
+as well.
