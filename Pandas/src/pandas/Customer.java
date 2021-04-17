@@ -10,17 +10,42 @@ public class Customer
 	private String name;
 	private double money;
 	private ArrayList<Bid> bids = new ArrayList<Bid>();
+	private String password;
+	private String userName;
 	
+	
+	
+
 	public Customer()
 	{
 		custID = currentCustID;
 		currentCustID++;
 	}
 	
-	public Customer(String name)
+	public Customer(String name, double money, String userName, String password)
 	{
+		this.name=name;
+		this.money = money;
+		this.userName = userName;
+		this.password = password;
 		custID = currentCustID;
 		currentCustID++;
+	}
+	
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	public String getUserName() {
+		return userName;
+	}
+
+	public void setUserName(String userName) {
+		this.userName = userName;
 	}
 	
 	public String toString()
@@ -40,9 +65,24 @@ public class Customer
 
 	public void listBids()
 	{
+		if(bids.isEmpty())
+		{
+			System.out.println("You have no bids.");
+		}
+		else
+		{
+			for(int i = 0; i < bids.size(); i++)
+			{
+				System.out.println(bids.get(i).toString());
+			}
+		}
+	}
+	
+	public void listWinningBids()
+	{
 		for(int i = 0; i < bids.size(); i++)
 		{
-			System.out.println(bids.get(i).toString());
+			
 		}
 	}
 	

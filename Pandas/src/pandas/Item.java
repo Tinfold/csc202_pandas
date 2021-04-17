@@ -18,6 +18,11 @@ public class Item {
 		this.increment=increment;
 	}
 	
+	public void checkBiddingHistory()
+	{
+		
+	}
+	
 	public double getMinimumBid() {
 		return minimumBid;
 	}
