@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 public class Item {
 	private ArrayList<Bid> bids = new ArrayList<Bid>();
+	private Stack<Bid> bidHistory = new Stack<Bid>();
 	private String name;
 	private double minimumBid;
 	private double increment;
@@ -57,6 +58,7 @@ public class Item {
 
 	public void addBid(Bid bid) {
 		this.bids.add(bid);
+		bidHistory.push(bid);
 	}
 
 	public String toString() {
