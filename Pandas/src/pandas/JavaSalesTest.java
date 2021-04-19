@@ -28,11 +28,11 @@ class JavaSalesTest {
 		Item painting=new Item("A Great Painting",50,100);
 		
 		paint.add(painting);
-		Customer cust = new Customer("Joe Bastianich",9285920,"jbas123","password");
+		Customer cust = new Customer("Joe Bastianich","jbas123","password");
 
 		javaSales.bid(paint, cust);
 		
-		assertEquals(1,painting.getBids().size(),"There should be one bid for the item");
+		assertEquals(1,painting.getBidCount(),"There should be one bid for the item");
 	}
 	
 	@Test

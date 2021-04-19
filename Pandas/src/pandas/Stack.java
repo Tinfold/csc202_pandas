@@ -18,14 +18,29 @@ public class Stack<E> {
       return stackList.removeFromFront(); 
    } 
    
-   public E peek() throws NoSuchElementException {
-	   E current = stackList.removeFromFront();
-	   stackList.insertAtFront(current);
-	   return current;
-   }
+
 
    // determine if stack is empty
    public boolean isEmpty() {return stackList.isEmpty();}
+
+   public E peek() throws NoSuchElementException {
+	   E data = stackList.removeFromFront();
+	   stackList.insertAtFront(data);
+	   return data;
+   }
+   
+   public Stack<E> clone()
+   {
+	   Stack<E> cloneStack = new Stack<E>();
+	   List<E> cloneList = stackList.clone();
+	   while(cloneList.isEmpty() == false)
+	   {
+		   cloneStack.push(cloneList.removeFromFront());
+	   }
+	   
+	   return cloneStack;
+   }
+   
 
    // output stack contents
    public void print() {stackList.print();}

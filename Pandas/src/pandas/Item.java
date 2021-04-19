@@ -3,11 +3,13 @@ package pandas;
 import java.util.ArrayList;
 
 public class Item {
-	private ArrayList<Bid> bids = new ArrayList<Bid>();
-	private Stack<Bid> bidHistory = new Stack<Bid>();
+
+	private Stack<Bid> bids = new Stack<Bid>();
+
 	private String name;
 	private double minimumBid;
 	private double increment;
+	private int bidCount;
 	
 	public Item() {
 		
@@ -21,7 +23,16 @@ public class Item {
 	
 	public void checkBiddingHistory()
 	{
+		if(bids.isEmpty())
+		{
+			System.out.println("This auction has no bids.");
+		}
 		
+		Stack<Bid> temp = bids.clone();
+		while(temp.isEmpty() == false)
+		{
+			System.out.println(temp.pop().toString());
+		}
 	}
 	
 	public double getMinimumBid() {
@@ -38,14 +49,22 @@ public class Item {
 
 	public void setIncrement(double increment) {
 		this.increment = increment;
-	}
+	}	
 
-	public ArrayList<Bid> getBids() {
+	public Stack<Bid> getBids() {
 		return bids;
 	}
 
-	public void setBids(ArrayList<Bid> bids) {
+	public void setBids(Stack<Bid> bids) {
 		this.bids = bids;
+	}
+
+	public int getBidCount() {
+		return bidCount;
+	}
+
+	public void setBidCount(int bidCount) {
+		this.bidCount = bidCount;
 	}
 
 	public String getName() {
@@ -56,13 +75,21 @@ public class Item {
 		this.name = name;
 	}
 
+/*
 	public void addBid(Bid bid) {
 		this.bids.add(bid);
 		bidHistory.push(bid);
+*/
+  
+	public void addBid(Bid bid) 
+	{
+		bids.push(bid);
+		bidCount++;
+
 	}
 
 	public String toString() {
 		
-		return "The item " + this.name + " currently has " + this.bids.size() + " bids" ;
+		return "The item " + this.name + " is currently being auctioned and has " + bidCount + " bids";
 	}
 }

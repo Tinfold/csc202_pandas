@@ -17,27 +17,28 @@ import java.util.TreeMap;
 
 public class JavaSales {
 
+
 	public static int timeHours=9;
 	public static int timeMinutes=0;
 	
-	public static void main(String[] args) {
-
+	public static void main(String[] args) 
+	{		
 		ArrayList<Item> paint = new ArrayList<>();
+		ArrayList<Item> completedAuctions = new ArrayList<Item>();
 		ArrayList<Customer> clients = new ArrayList<>();
+
 		Queue<QueuedBid> queuedBids = new Queue<QueuedBid>();
 		
-		String adminPassword = "password";
-
-		//Customer testCustomer = new Customer("John Doe", 99999, "jdoe", "password");
-
-		//clients.add(testCustomer);
-
+		Credentials adminLogin = new Credentials("admin", "password");
 		int sentinel = 0;
 		while (sentinel != 5) {
 			int selection = mainMenu();
 			if (selection == 1) {
-				auctionSetup(paint);
+
 				clients=inputData();
+
+				auctionSetup(paint, clients);
+
 				System.out.println("Sample data loaded.");
 				
 			} else if (selection == 2) {
@@ -47,9 +48,9 @@ public class JavaSales {
 					processBid(bid.getForItem(),bid.getCust(),bid.getBid(),bid.getMaxBid());
 				}
 			} else if (selection == 3) {
-				boolean sLogin = attemptAdminLogIn(adminPassword);
+				boolean sLogin = attemptAdminLogIn(adminLogin);
 				if (sLogin) {
-					adminMenu(paint, clients);
+					adminMenu(paint, clients, completedAuctions);
 				}
 			} else if (selection == 4) {
 				custLMenu(clients, paint);
@@ -92,6 +93,9 @@ public class JavaSales {
 			System.out.println("You threw an exception. ");
 		}
 		return in;
+
+	public static void auctionSetup(ArrayList<Item> p, ArrayList<Customer> clients) {
+
 
 	}
 	
@@ -159,6 +163,9 @@ public class JavaSales {
 	
 	public static void auctionSetup(ArrayList<Item> p) {
 		p.add(new Item("The Starry Night", 12000, 500));
+		p.get(0).addBid(new Bid(clients.get(0), 24000, 32000));
+		p.get(0).addBid(new Bid(clients.get(0), 35000, 36000));
+		p.get(0).addBid(new Bid(clients.get(0), 40000, 45000));
 		p.add(new Item("Mona Lisa", 18000, 1000));
 		p.add(new Item("American Gothic", 9000, 200));
 		p.add(new Item("The Storm on the Sea of Galilee", 6000, 100));
@@ -263,19 +270,20 @@ public class JavaSales {
 		}
 	}
 
-	public static void adminMenu(ArrayList<Item> paint, ArrayList<Customer> clients) {
+	public static void adminMenu(ArrayList<Item> paint, ArrayList<Customer> clients, ArrayList<Item> completedAuctions) {
 		Scanner scan = new Scanner(System.in);
 
-		System.out.println("Please enter the number that corresponds with the action you would like to perform");
-		System.out.println("1: List current ongoing auctions");
-		System.out.println("2: Choose an ongoing auction and check the bidding history");
-		System.out.println("3: List information about completed auctions");
-		System.out.println("4: Summary data of winning bids");
-		System.out.println("5: Add and activate a new auction");
-		System.out.println("6: Return to main menu");
 		int select = -1;
 		while(select != 6)
 		{
+			System.out.println("Please enter the number that corresponds with the action you would like to perform");
+			System.out.println("1: List current ongoing auctions");
+			System.out.println("2: Choose an ongoing auction and check the bidding history");
+			System.out.println("3: List information about completed auctions");
+			System.out.println("4: Summary data of winning bids");
+			System.out.println("5: Add and activate a new auction");
+			System.out.println("6: Return to main menu");
+			
 			try {
 				select = scan.nextInt();
 			} catch (InputMismatchException ime) {
@@ -293,11 +301,11 @@ public class JavaSales {
 			}
 			else if(select == 3)
 			{
-				
+				listCompletedAuctions(completedAuctions);
 			}
 			else if(select == 4)
 			{
-				
+				listWinningBids(paint);
 			}
 			else if(select == 5)
 			{
@@ -305,6 +313,7 @@ public class JavaSales {
 				if(item != null)
 				{
 					paint.add(item);
+					System.out.println("Auction successfully created");
 				}
 			}
 
@@ -415,15 +424,14 @@ public class JavaSales {
 	public static void custMenu(Customer cust, ArrayList<Item> paint) {
 		Scanner scan = new Scanner(System.in);
 
-		System.out.println("Please enter the number that corresponds with the action you would like to perform");
-		System.out.println("1: Check my active bids");
-		System.out.println("2: Check my winning bids");
-		System.out.println("3: Bid on an item");
-		System.out.println("4: Pay for an item that I won");
-		System.out.println("5: Return to main menu (log out)");
 		int select = -1;
 		while(select != 5)
 		{
+			System.out.println("Please enter the number that corresponds with the action you would like to perform");
+			System.out.println("1: Check my active bids");
+			System.out.println("2: Check my winning bids");
+			System.out.println("3: Bid on an item");
+			System.out.println("4: Return to main menu (log out)");
 			try {
 				select = scan.nextInt();
 			} catch (InputMismatchException ime) {
@@ -431,31 +439,27 @@ public class JavaSales {
 			}
 			if (select == 1)
 			{
-				cust.listBids();
+				listCustomerBids(paint, cust);
 			}
 			else if(select == 2)
 			{
-				cust.listWinningBids();
+				checkWinningBids(paint, cust);
 			}
 			else if(select == 3)
 			{
 				bid(paint, cust);
 			}
-			else if(select == 4)
-			{
-				
-			}
-			else if(select != 5)
+			else if(select != 4)
 			{
 				System.out.println("You did not enter a valid selection");
 			}
 		}
 	}
 	
-	public static boolean attemptAdminLogIn(String adminPassword) {
+	public static boolean attemptAdminLogIn(Credentials adminPassword) {
 		Scanner scan = new Scanner(System.in);
 		System.out.println("Please input the admin password.");
-		if (scan.nextLine().equals(adminPassword)) {
+		if (scan.nextLine().equals(adminPassword.getP())) {
 			System.out.println("You have successfully logged in as an admin.");
 			return true;
 		} else {
@@ -472,7 +476,7 @@ public class JavaSales {
 		String password = scan.nextLine();
 
 		for (int i = 0; i < clients.size(); i++) {
-			if (clients.get(i).getUserName().equals(userName) && clients.get(i).getPassword().equals(password)) {
+			if (clients.get(i).getLogin().getU().equals(userName) && clients.get(i).getLogin().getP().equals(password)) {
 				System.out.println("You have succesfully logged in.");
 				return clients.get(i);
 			}
@@ -487,15 +491,13 @@ public class JavaSales {
 		Scanner scan = new Scanner(System.in);
 		System.out.println("Input your first and last name:");
 		String name = scan.nextLine();
-		System.out.println("Input the amount of money you would like to deposit:");
-		double money = scan.nextDouble();
 		scan.nextLine();
 		System.out.println("Input your username:");
 		String username = scan.nextLine();
 		System.out.println("Input your password:");
 		String password = scan.nextLine();
 		
-		return new Customer(name, money, username, password);
+		return new Customer(name, username, password);
 	}
 	
 	public static void bid(ArrayList<Item> paint, Customer cust)
@@ -506,9 +508,14 @@ public class JavaSales {
 		Item painting = selectAuction(paint);
 		ArrayList<Bid> uniqueCustomerBids = new ArrayList<Bid>();
 
-		for (int i = 0; i < painting.getBids().size(); i++) {
-			if (painting.getBids().get(i).getCust().getCustID() == cust.getCustID()) {
-				uniqueCustomerBids.add(painting.getBids().get(i));
+		Stack<Bid> temp = painting.getBids().clone();
+		
+		while(temp.isEmpty() == false)
+		{
+			Bid bid = painting.getBids().pop();
+			if(bid.getCust().getCustID() == cust.getCustID())
+			{
+				uniqueCustomerBids.add(bid);
 			}
 		}
 
@@ -525,8 +532,8 @@ public class JavaSales {
 		System.out.println("Current highest bid on item:");
 
 		double minBid = painting.getMinimumBid();
-		if (painting.getBids().size() > 0) {
-			Bid highestBid = painting.getBids().get(painting.getBids().size() - 1);
+		if (painting.getBidCount() > 0) {
+			Bid highestBid = painting.getBids().peek();
 			System.out.println(highestBid.toString());
 
 			System.out.println("---------------------------------------------");
@@ -542,15 +549,41 @@ public class JavaSales {
 		System.out.println("2) Return to customer menu");
 
 		int bidSelection = scan.nextInt();
-		if (bidSelection == 1) {
+		if (bidSelection == 1) 
+		{
 			System.out.println("Enter a legal bid value:");
 			double myBid = scan.nextDouble();
+      /*
+
 			if (myBid >= minBid) {
 				painting.addBid(new Bid(cust, myBid, 9999999));													
 				System.out.println("Bid successful!");
 			} else {
 				System.out.println("You must bid at least "
 						+ NumberFormat.getCurrencyInstance().format(minBid));
+
+			*/
+			Bid topBid = null;
+			if(painting.getBids().isEmpty() == false)
+			{
+				topBid = painting.getBids().peek();
+			}
+			
+			if(myBid < minBid)
+			{
+				System.out.println("Your bid was not added because it was lower than the highest bid");
+			}
+			else if(topBid != null && myBid < topBid.getMaxBid())
+			{
+				System.out.println("Your bid was not added because it was lower than the highest bid's maximum bid.");
+				painting.addBid(new Bid(topBid.getCust(), myBid, topBid.getMaxBid()));
+			}
+			else
+			{
+				System.out.println("What is the maximum bid you would like to pay:");
+				double maxBid = scan.nextDouble();
+				System.out.println("Your bid was successfully added.");
+				painting.addBid(new Bid(cust, myBid, maxBid));
 			}
 		}
 	}
@@ -565,6 +598,11 @@ public class JavaSales {
 	
 	public static void listAuctions(ArrayList<Item> paint)
 	{
+		if(paint.isEmpty())
+		{
+			System.out.println("There are no ongoing auctions.");
+		}
+		
 		for (int i = 0; i < paint.size(); i++) {
 			System.out.println(paint.get(i).toString());
 		}
@@ -589,9 +627,91 @@ public class JavaSales {
 		}
 	}
 	
-	public static void listCompletedAuctions()
+	public static void listCustomerBids(ArrayList<Item> paint, Customer cust)
 	{
+		System.out.println("Your current bids are:");
+		if(paint.isEmpty())
+		{
+			System.out.println("There are no ongoing auctions.");
+		}
+		if(cust.getBids().isEmpty())
+		{
+			System.out.println("You currently have no bids.");
+		}
 		
+		for(int i = 0; i < paint.size(); i++)
+		{
+			System.out.println(paint.get(i).getName());
+			Stack<Bid> bids = paint.get(i).getBids().clone();
+			while(bids.isEmpty() == false)
+			{
+				Bid bid = bids.pop();
+				if(cust.getCustID() == bid.getCust().getCustID())
+				{
+					System.out.println(bid.toString());
+					System.out.println("");
+				}
+			}
+		}
+	}
+	
+	public static void listCompletedAuctions(ArrayList<Item> auctions)
+	{
+		if(auctions.isEmpty())
+		{
+			System.out.println("No auctions have been completed yet.");
+		}
+		
+		for(int i = 0; i < auctions.size(); i++)
+		{
+			System.out.println(auctions.get(i).toString());
+			auctions.get(i).checkBiddingHistory();
+			System.out.println();
+		}
+	}
+	
+	public static void checkWinningBids(ArrayList<Item> auctions, Customer cust)
+	{
+		System.out.println("Your winning bids are:");
+		if(auctions.isEmpty())
+		{
+			System.out.println("There are no ongoing auctions.");
+		}
+		if(cust.getBids().isEmpty())
+		{
+			System.out.println("You currently have no bids.");
+		}
+		
+		for(int i = 0; i < auctions.size(); i++)
+		{
+			Stack<Bid> bids = auctions.get(i).getBids();
+			if(bids.isEmpty() == false && cust.getCustID() == bids.peek().getCust().getCustID())
+			{
+				System.out.println(auctions.get(i).getName());
+				System.out.println(bids.peek().toString());
+				System.out.println("");
+			}
+		}
+	}
+	
+	public static void listWinningBids(ArrayList<Item> auctions)
+	{
+		if(auctions.isEmpty())
+		{
+			System.out.println("There are no auctions currently ongoing.");
+		}
+		
+		for(int i = 0; i < auctions.size(); i++)
+		{
+			System.out.println(auctions.get(i).toString());
+			Stack<Bid> bids = auctions.get(i).getBids();
+			if(bids.isEmpty() == false)
+			{
+				Bid bid = bids.peek();
+				System.out.println("The winning bid for this auction is " + bid.toString());
+			}
+			System.out.println("");
+		}
 	}
 		
 	public static Item newAuction()

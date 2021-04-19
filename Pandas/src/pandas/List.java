@@ -111,6 +111,21 @@ public class List<E> {
    // determine whether list is empty; returns true if so
    public boolean isEmpty() {return firstNode == null;}
 
+
+   public List<E> clone()
+   {
+	   List<E> clone = new List<E>();
+	   ListNode<E> node = firstNode;
+	   while(node != null)
+	   {
+		   clone.insertAtFront(node.data);
+		   node = node.nextNode;
+	   }
+	   
+	   return clone;
+   }
+   
+
    // output list contents
    public void print() {
       if (isEmpty()) {
