@@ -265,59 +265,93 @@ public class JavaSales {
 		}
 	}
 
-	public static void adminMenu(ArrayList<Item> paint, ArrayList<Customer> clients, ArrayList<Item> completedAuctions) {
-		Scanner scan = new Scanner(System.in);
+	public static void adminMenu(ArrayList<Item> paint, ArrayList<Customer> clients, ArrayList<Item> completed) {
+        Scanner scan = new Scanner(System.in);
 
-		int select = -1;
-		while(select != 6)
-		{
-			System.out.println("Please enter the number that corresponds with the action you would like to perform");
-			System.out.println("1: List current ongoing auctions");
-			System.out.println("2: Choose an ongoing auction and check the bidding history");
-			System.out.println("3: List information about completed auctions");
-			System.out.println("4: Summary data of winning bids");
-			System.out.println("5: Add and activate a new auction");
-			System.out.println("6: Return to main menu");
-			
-			try {
-				select = scan.nextInt();
-			} catch (InputMismatchException ime) {
-				System.out.println("You did not enter an integer value");
-			}
-			
-			if (select == 1)
-			{
-				listAuctions(paint);
-			}
-			else if(select == 2)
-			{
-				Item item = selectAuction(paint);
-				item.checkBiddingHistory();
-			}
-			else if(select == 3)
-			{
-				listCompletedAuctions(completedAuctions);
-			}
-			else if(select == 4)
-			{
-				listWinningBids(paint);
-			}
-			else if(select == 5)
-			{
-				Item item = newAuction();
-				if(item != null)
-				{
-					paint.add(item);
-					System.out.println("Auction successfully created");
-				}
-			}
 
-			else if(select != 6)
-			{
-				System.out.println("You did not enter a valid selection");
-			}
-		}
-	}
+        int select = -1;
+        while(select != 7)
+        {
+            System.out.println("Please enter the number that corresponds with the action you would like to perform");
+            System.out.println("1: List current ongoing auctions");
+            System.out.println("2: Choose an ongoing auction and check the bidding history");
+            System.out.println("3: List information about completed auctions");
+            System.out.println("4: Summary data of winning bids");
+            System.out.println("5: Add and activate a new auction");
+            System.out.println("6: Close an auction");
+            System.out.println("7: Return to main menu");
+            try {
+                select = scan.nextInt();
+            } catch (InputMismatchException ime) {
+                System.out.println("You did not enter an integer value");
+            }
+            if (select == 1)
+            {
+                listAuctions(paint);
+            }
+            else if(select == 2)
+            {
+                Item item = selectAuction(paint);
+                item.checkBiddingHistory();
+            }
+            else if(select == 3)
+            {
+                listCompletedAuctions(completed);
+            }
+            else if(select == 4)
+            {
+                winningSummary(completed);
+            }
+            else if(select == 5)
+            {
+                Item item = newAuction();
+                if(item != null)
+                {
+                    paint.add(item);
+                }
+            }
+            else if(select == 6) 
+            {
+                closeAuction(paint, completed);
+            }
+            else if(select != 7)
+            {
+                System.out.println("You did not enter a valid selection");
+            }
+        }
+    }
+	
+	public static void winningSummary(ArrayList<Item> completed) {
+        NumberFormat nf = NumberFormat.getCurrencyInstance();
+        double count = 0;
+        System.out.println("Completed Auctions:\n");
+        for(int i = 0; i < completed.size(); i++) {
+            count += completed.get(i).getBids().peek().getBid();
+            System.out.println(completed.get(i).getName());
+            System.out.println("Winner: " + completed.get(i).getBids().peek().getCust().getName());
+            System.out.println("Price: " + nf.format(completed.get(i).getBids().peek().getBid()));
+            System.out.println();
+        }
+        
+        System.out.println("The total expected payment for all of the completed auctions is " + nf.format(count));
+    }
+	
+	public static void closeAuction(ArrayList<Item> paint, ArrayList<Item> completed) {
+        Scanner scan = new Scanner(System.in);
+        for(int i = 0; i < paint.size(); i++) {
+            System.out.println((i+1) + ": " + paint.get(i).getName());
+        }
+        System.out.println("Please select which auction you would like to close");
+        int select = -1;
+        try {
+            select = scan.nextInt()-1;
+        } catch (Exception e) {
+            System.out.println("An error occured with your selection");
+        }
+        System.out.println(paint.get(select).getName() + " has been removed from the auction");
+        completed.add(paint.get(select));
+        paint.remove(select);
+    }
 
 	public static void incrementTime() {
 		timeMinutes+=30;
