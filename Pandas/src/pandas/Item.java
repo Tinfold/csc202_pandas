@@ -83,8 +83,8 @@ public class Item {
   
 	public void addBid(Bid bid) 
 	{
-		bids.push(bid);
-		bidCount++;
+		this.bids.push(bid);
+		this.bidCount++;
 
 	}
 

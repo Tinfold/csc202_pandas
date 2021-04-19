@@ -37,7 +37,7 @@ public class JavaSales {
 
 				clients=inputData();
 
-				auctionSetup(paint, clients);
+				auctionSetup(paint);
 
 				System.out.println("Sample data loaded.");
 				
@@ -93,7 +93,8 @@ public class JavaSales {
 			System.out.println("You threw an exception. ");
 		}
 		return in;
-
+	}
+	
 	public static void auctionSetup(ArrayList<Item> p, ArrayList<Customer> clients) {
 
 
@@ -135,7 +136,7 @@ public class JavaSales {
 					last=st.nextToken().trim();
 					user=st.nextToken().trim();
 					pass=st.nextToken().trim();
-					Customer newCustomer=new Customer((first + " " + last),99999999,user,pass);
+					Customer newCustomer=new Customer((first + " " + last),user,pass);
 					customers.add(newCustomer);
 				}
 				try {
@@ -163,9 +164,6 @@ public class JavaSales {
 	
 	public static void auctionSetup(ArrayList<Item> p) {
 		p.add(new Item("The Starry Night", 12000, 500));
-		p.get(0).addBid(new Bid(clients.get(0), 24000, 32000));
-		p.get(0).addBid(new Bid(clients.get(0), 35000, 36000));
-		p.get(0).addBid(new Bid(clients.get(0), 40000, 45000));
 		p.add(new Item("Mona Lisa", 18000, 1000));
 		p.add(new Item("American Gothic", 9000, 200));
 		p.add(new Item("The Storm on the Sea of Galilee", 6000, 100));
@@ -341,11 +339,17 @@ public class JavaSales {
 		// this method will generate a random bid for each item from an eligible customer (customer w/o bid for that same item)
 		for (int a=0;a<items.size();a++) {
 			Item painting=items.get(a);
+			ArrayList<Bid> bidsMade = new ArrayList<Bid>();
+			Stack<Bid> cloneStack=painting.getBids().clone();
+			while (!cloneStack.isEmpty()) {
+				bidsMade.add(cloneStack.pop());
+			}
+			
 			ArrayList<Customer> eligibleBidders=new ArrayList<Customer>();
 			for (int i=0;i<customers.size();i++) {
 				boolean canBid=true;
-				for (int b=0;b<painting.getBids().size();b++) {
-					if (items.get(a).getBids().get(b).getCust().equals(customers.get(i))) {
+				for (int b=0;b<bidsMade.size();b++) {
+					if (bidsMade.get(b).getCust().equals(customers.get(i))) {
 						canBid=false;
 						break;
 					}
@@ -366,8 +370,8 @@ public class JavaSales {
 			
 			if (willBidUp) {
 				bid=painting.getMinimumBid();
-				if (painting.getBids().size()>0) {
-					bid=painting.getBids().get(painting.getBids().size()-1).getBid() + painting.getIncrement();
+				if (bidsMade.size()>0) {
+					bid=painting.getBids().peek().getBid() + painting.getIncrement();
 				}
 				maxBid=bid + ((rand.nextInt(20)+1)*painting.getIncrement()); 
 				// formula for calculating max bid
@@ -389,11 +393,16 @@ public class JavaSales {
 	}
 	
 	public static void processBid(Item painting, Customer bidder, double bid, double maxBid) {
+		ArrayList<Bid> bidsMade = new ArrayList<Bid>();
+		Stack<Bid> cloneStack=painting.getBids().clone();
+		while (!cloneStack.isEmpty()) {
+			bidsMade.add(cloneStack.pop());
+		}
 		if (bid>=painting.getMinimumBid()) {
 			//now let's make sure its more than current highest bidder
-			if (painting.getBids().size()>0) {
-				if (maxBid>painting.getBids().get(painting.getBids().size()-1).getMaxBid()) {
-					bid(painting,bidder,painting.getBids().get(painting.getBids().size()-1).getMaxBid(),maxBid); //finalize the bid
+			if (bidsMade.size()>0) {
+				if (maxBid>painting.getBids().peek().getMaxBid()) {
+					bid(painting,bidder,painting.getBids().peek().getMaxBid(),maxBid); //finalize the bid
 					System.out.println(bidder.getName() + " has successfully bid " 
 					+ NumberFormat.getCurrencyInstance().format(bid) + " on " + painting.getName() 
 					+ " with a maximum bid of " + NumberFormat.getCurrencyInstance().format(maxBid));
@@ -404,8 +413,8 @@ public class JavaSales {
 					System.out.println(bidder.getName() + " tried to bid " 
 							+ NumberFormat.getCurrencyInstance().format(bid) + " on " + painting.getName() 
 							+ " with a maximum bid of " + NumberFormat.getCurrencyInstance().format(maxBid) + 
-							" but failed because a previous bidder's max bid was higher at " + NumberFormat.getCurrencyInstance().format(painting.getBids().get(painting.getBids().size()-1).getMaxBid() ));
-					painting.getBids().get(painting.getBids().size()-1).setBid(maxBid);
+							" but failed because a previous bidder's max bid was higher at " + NumberFormat.getCurrencyInstance().format(bidsMade.get(bidsMade.size()-1).getMaxBid() ));
+					painting.getBids().peek().setBid(maxBid);
 				}
 			}
 			else {
@@ -592,7 +601,7 @@ public class JavaSales {
 	// method overload for automation
 	{
 		Bid bid = new Bid(cust,minBid,maxBid);
-		cust.addBid(bid);
+		//cust.addBid(bid);
 		paint.addBid(bid);
 	}
 	
