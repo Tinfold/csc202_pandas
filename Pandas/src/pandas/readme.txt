@@ -16,11 +16,3 @@ Choose menu item #3 to bid on an existing item
 -Added JUnit test
 -Made sure to put readmes directly in the package
 
-FOR FUTURE TIME SIMULATION:
-We're thinking about maybe reading in all bids from a file.
-Each entry can have a time value of some sort. We can have a separate thread
-running in the background that automatically reads in all the data and 
-automatically places bids for each customer. This eliminates you having to
-manually input bids. Then, we can have the program automatically exit
-at the end of the auction day.
-

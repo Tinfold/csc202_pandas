@@ -4,7 +4,6 @@ package pandas;
 
 import java.util.NoSuchElementException;
 
-
 public class Stack<E> {
    private List<E> stackList;
 
@@ -19,6 +18,8 @@ public class Stack<E> {
       return stackList.removeFromFront(); 
    } 
    
+
+
    // determine if stack is empty
    public boolean isEmpty() {return stackList.isEmpty();}
 
@@ -40,6 +41,7 @@ public class Stack<E> {
 	   return cloneStack;
    }
    
+
    // output stack contents
    public void print() {stackList.print();}
 } 

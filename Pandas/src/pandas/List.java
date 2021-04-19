@@ -111,6 +111,7 @@ public class List<E> {
    // determine whether list is empty; returns true if so
    public boolean isEmpty() {return firstNode == null;}
 
+
    public List<E> clone()
    {
 	   List<E> clone = new List<E>();
@@ -124,6 +125,7 @@ public class List<E> {
 	   return clone;
    }
    
+
    // output list contents
    public void print() {
       if (isEmpty()) {
