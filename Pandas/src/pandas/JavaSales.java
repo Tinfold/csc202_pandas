@@ -184,11 +184,8 @@ public class JavaSales {
 			if (timeHours>=17 | timeHours<9) {
 				openString="The auction house is closed.";
 			}
-			
-			
+						
 			String amPM = "AM";
-			
-			
 			
 			if (timeHours>12) {
 				AM=false;
@@ -330,7 +327,8 @@ public class JavaSales {
 				timeMinutes=0;
 			}
 			else {
-				timeHours=0;
+				timeHours=1;
+				timeMinutes=0;
 			}
 		}
 	}
@@ -408,13 +406,18 @@ public class JavaSales {
 					+ " with a maximum bid of " + NumberFormat.getCurrencyInstance().format(maxBid));
 				}
 				else {
-					//otherwise we throw it out and change the highest bidders current bid to match
+					//otherwise we throw it out and change the highest bidders current bid to match (change as in add another bid)
 					//whoever tried to bid's max bid
 					System.out.println(bidder.getName() + " tried to bid " 
 							+ NumberFormat.getCurrencyInstance().format(bid) + " on " + painting.getName() 
 							+ " with a maximum bid of " + NumberFormat.getCurrencyInstance().format(maxBid) + 
 							" but failed because a previous bidder's max bid was higher at " + NumberFormat.getCurrencyInstance().format(bidsMade.get(bidsMade.size()-1).getMaxBid() ));
-					painting.getBids().peek().setBid(maxBid);
+					
+					Bid prevBid=painting.getBids().peek();
+					if (bid>prevBid.getBid()) {
+						painting.addBid(new Bid(prevBid.getCust(),maxBid,prevBid.getMaxBid()));
+					}
+					//.setBid(maxBid);
 				}
 			}
 			else {
