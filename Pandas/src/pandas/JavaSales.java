@@ -471,7 +471,7 @@ public class JavaSales {
 		Scanner scan = new Scanner(System.in);
 
 		int select = -1;
-		while(select != 5)
+		while(select != 4)
 		{
 			System.out.println("Please enter the number that corresponds with the action you would like to perform");
 			System.out.println("1: Check my active bids");
@@ -535,9 +535,10 @@ public class JavaSales {
 	public static Customer newCustomer()
 	{
 		Scanner scan = new Scanner(System.in);
-		System.out.println("Input your first and last name:");
+		System.out.println("Input your first name:");
 		String name = scan.nextLine();
-		scan.nextLine();
+		System.out.println("Input your last name:");
+		name = name + " " + scan.nextLine();
 		System.out.println("Input your username:");
 		String username = scan.nextLine();
 		System.out.println("Input your password:");
@@ -558,7 +559,7 @@ public class JavaSales {
 		
 		while(temp.isEmpty() == false)
 		{
-			Bid bid = painting.getBids().pop();
+			Bid bid = temp.pop();
 			if(bid.getCust().getCustID() == cust.getCustID())
 			{
 				uniqueCustomerBids.add(bid);
@@ -687,13 +688,15 @@ public class JavaSales {
 		
 		for(int i = 0; i < paint.size(); i++)
 		{
-			System.out.println(paint.get(i).getName());
+			
 			Stack<Bid> bids = paint.get(i).getBids().clone();
+			
 			while(bids.isEmpty() == false)
 			{
 				Bid bid = bids.pop();
 				if(cust.getCustID() == bid.getCust().getCustID())
 				{
+					System.out.println(paint.get(i).getName());
 					System.out.println(bid.toString());
 					System.out.println("");
 				}
