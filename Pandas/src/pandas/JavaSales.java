@@ -68,7 +68,8 @@ public class JavaSales {
 				}
 				else {
 					System.out.println("You must process the backlogged data before resuming business as usual.");
-				}	
+				}
+			}
 			else if(selection == 5)
 			{
 				loadDatabase(clients, paint);
@@ -192,28 +193,28 @@ public class JavaSales {
 		{
 			stmt = con.createStatement();
 
-			stmt.execute("delete * from customers");
-			stmt.execute("delete * from bids");
-			stmt.execute("delete * from auctions");
+			stmt.execute("truncate customers");
+			stmt.execute("truncate bids");
+			stmt.execute("truncate items");
 			
 			for(int i = 0; i < custs.size(); i++)
 			{
 				Customer cust = custs.get(i);
-				String insert = "insert into customers values(" + cust.getCustID() + "," + cust.getName() + "," + cust.getLogin().getU() + "," + cust.getLogin().getP() + ")";
+				String insert = "insert into customers values(" + cust.getCustID() + ",'" + cust.getName() + "','" + cust.getLogin().getU() + "','" + cust.getLogin().getP() + "')";
 				stmt.execute(insert);
 			}
 			
 			for(int i = 0; i < auctions.size(); i++)
 			{
 				Item item = auctions.get(i);
-				String insert = "insert into items values(" + item.getName() + "," + item.getMinimumBid() + "," + item.getIncrement() + ")";
+				String insert = "insert into items values('" + item.getName() + "'," + item.getMinimumBid() + "," + item.getIncrement() + ")";
 				stmt.execute(insert);
 				
 				Stack<Bid> bids = item.getBids().clone();
 				while(bids.isEmpty() == false)
 				{
 					Bid bid = bids.pop();
-					insert = "insert into bids values(" + bid.getBid() + "," + bid.getMaxBid() + "," + bid.getCust().getCustID() + "," + item.getName() + ")";
+					insert = "insert into bids values(" + bid.getBid() + "," + bid.getMaxBid() + "," + bid.getCust().getCustID() + ",'" + item.getName() + "')";
 					stmt.execute(insert);
 				}
 			}
@@ -291,7 +292,6 @@ public class JavaSales {
 		System.out.println("This method is deprecated, please load data from the database instead.");
 		Customer testCustomer = new Customer("John Doe", "jdoe", "password");
 
-		clients.add(testCustomer);
 		p.add(new Item("The Starry Night", 12000, 500));
 		p.add(new Item("Mona Lisa", 18000, 1000));
 		p.add(new Item("American Gothic", 9000, 200));
@@ -348,7 +348,7 @@ public class JavaSales {
 			} catch (InputMismatchException ime) {
 				System.out.println("You did not enter an integer value");
 			}
-			if (select == 1 || select == 2 || select == 3 || select == 4 || select == 5 || select == 0)
+			if (select >= 0 && select <= 7)
 				return select;
 			else
 				System.out.println("You did not enter a valid selection");

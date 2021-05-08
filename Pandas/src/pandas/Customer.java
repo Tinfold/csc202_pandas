@@ -30,6 +30,7 @@ public class Customer
 		this.name = name;
 		this.login = new Credentials(username, password);
 		this.custID = custId;
+		currentCustID = custId + 1;
 	}
 	
 	public Credentials getLogin() {
