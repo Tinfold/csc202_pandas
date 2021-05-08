@@ -1,5 +1,17 @@
 Instructions:
 
+DATABASE STUFF:
+1. Include the jcdb jar in the classpath instead of the modulepath for this project.
+2. Import the SQL file in the jar to phpMyAdmin.
+3. Make a user with all privileges with the username pandas and password pandas.
+4. You can load the customers.csv file
+5. Advance time etc
+6. You can then save the database (option 5). Enter "pandas" for each query.
+7. Refresh phpMyAdmin. You should see the updated database.
+8. You can run the program again and load from the database instead this time, and it 
+will load all that data.
+
+
 
 STEP 1)
 When you run the program, the first thing you must do is load the customers.csv file.

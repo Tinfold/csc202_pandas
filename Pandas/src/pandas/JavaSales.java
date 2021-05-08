@@ -78,9 +78,15 @@ public class JavaSales {
 			{
 				saveDatabase(clients, paint);
 			}
+			
+			else if(selection == 7) {
+				System.out.println("Goodbye!");
+				System.exit(0);
+			}
 
 			System.out.println();
 		}
+
 	}
 
 	public static BufferedReader openRead() {
