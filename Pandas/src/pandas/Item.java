@@ -3,7 +3,9 @@ package pandas;
 import java.util.ArrayList;
 
 public class Item {
+
 	private Stack<Bid> bids = new Stack<Bid>();
+
 	private String name;
 	private double minimumBid;
 	private double increment;
@@ -73,10 +75,17 @@ public class Item {
 		this.name = name;
 	}
 
+/*
+	public void addBid(Bid bid) {
+		this.bids.add(bid);
+		bidHistory.push(bid);
+*/
+  
 	public void addBid(Bid bid) 
 	{
-		bids.push(bid);
-		bidCount++;
+		this.bids.push(bid);
+		this.bidCount++;
+
 	}
 
 	public String toString() {

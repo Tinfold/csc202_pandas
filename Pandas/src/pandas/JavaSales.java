@@ -1,32 +1,58 @@
 package pandas;
 
+import java.awt.FileDialog;
+import java.awt.Frame;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.InputMismatchException;
+import java.util.Random;
 import java.util.Scanner;
+import java.util.StringTokenizer;
+import java.util.TreeMap;
 
 public class JavaSales {
 
+
+	public static int timeHours=9;
+	public static int timeMinutes=0;
+	
 	public static void main(String[] args) 
 	{		
 		ArrayList<Item> paint = new ArrayList<>();
 		ArrayList<Item> completedAuctions = new ArrayList<Item>();
 		ArrayList<Customer> clients = new ArrayList<>();
 
+		Queue<QueuedBid> queuedBids = new Queue<QueuedBid>();
+		
 		Credentials adminLogin = new Credentials("admin", "password");
 
 		int sentinel = 0;
 		while (sentinel != 7) {
 			int selection = mainMenu();
 			if (selection == 1) {
-				auctionSetup(paint, clients);
+
+				clients=inputData();
+
+				auctionSetup(paint);
+
 				System.out.println("Sample data loaded.");
+				
 			} else if (selection == 2) {
-				System.out.println("Not Implemented Yet.");
+				System.out.println("Processing backlogged data...");
+				while (!queuedBids.isEmpty()) {
+					QueuedBid bid=queuedBids.dequeue();
+					processBid(bid.getForItem(),bid.getCust(),bid.getBid(),bid.getMaxBid());
+				}
 			} else if (selection == 3) {
 				boolean sLogin = attemptAdminLogIn(adminLogin);
 				if (sLogin) {
@@ -35,6 +61,14 @@ public class JavaSales {
 			} else if (selection == 4) {
 				custLMenu(clients, paint);
 			}
+			else if(selection==0) {
+				if (queuedBids.isEmpty() || (timeHours>16 || timeHours!=9)) {
+					generateBids(paint,clients,queuedBids);
+					incrementTime();
+				}
+				else {
+					System.out.println("You must process the backlogged data before resuming business as usual.");
+				}	
 			else if(selection == 5)
 			{
 				loadDatabase(clients, paint);
@@ -48,6 +82,32 @@ public class JavaSales {
 		}
 	}
 
+	public static BufferedReader openRead() {
+		Frame f = new Frame();
+		// decide from where to read the file
+		FileDialog foBox = new FileDialog(f, "Pick location for reading your file", FileDialog.LOAD);
+		System.out.println("The dialog box will appear behind Eclipse.  " + 
+		      "\n   Choose where you would like to read from.");
+		foBox.setVisible(true);
+		// get the absolute path to the file
+		String foName = foBox.getFile();
+		String dirPath = foBox.getDirectory();
+
+		// create a file instance for the absolute path
+		File inFile = new File(dirPath + foName);
+		if (!inFile.exists()) {
+			System.out.println("That file does not exist");
+			System.exit(0);
+		}
+		BufferedReader in = null;
+		try {
+			in = new BufferedReader(new FileReader(inFile));
+		} catch (IOException e) {
+			System.out.println("You threw an exception. ");
+		}
+		return in;
+  }
+    
 	public static Connection connectToDatabase()
 	{
 		Scanner scan = new Scanner(System.in);
@@ -164,43 +224,131 @@ public class JavaSales {
 			e.printStackTrace();
 		}
 	}
-	
-	public static void auctionSetup(ArrayList<Item> p, ArrayList<Customer> clients) {
 
+	
+	public static ArrayList<Customer> inputData() {
+		ArrayList<Customer> customers = new ArrayList<Customer>();
+		
+		String first;
+		String last;
+		String user;
+		String pass;
+		
+		BufferedReader bf = null;
+		try {
+
+			bf = openRead();
+
+			String line = "";
+			try {
+				line = bf.readLine();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+			try {
+				line = bf.readLine();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+			String delim = ",";
+			
+			while (line != null) { 
+				StringTokenizer st = new StringTokenizer(line, delim);
+				while (st.hasMoreTokens()) { 
+					first=st.nextToken().trim();
+					last=st.nextToken().trim();
+					user=st.nextToken().trim();
+					pass=st.nextToken().trim();
+					Customer newCustomer=new Customer((first + " " + last),user,pass);
+					customers.add(newCustomer);
+				}
+				try {
+					line = bf.readLine();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			} 
+
+		}
+		catch (Exception e) {
+			System.out.println("Other weird things happened");
+			e.printStackTrace();
+		} finally {
+			try {
+				bf.close();
+			} catch (Exception e) {
+			}
+		}
+		return customers;
+
+	}
+	
+	
+	
+	public static void auctionSetup(ArrayList<Item> p) {
 		System.out.println("This method is deprecated, please load data from the database instead.");
 		Customer testCustomer = new Customer("John Doe", "jdoe", "password");
 
 		clients.add(testCustomer);
 		p.add(new Item("The Starry Night", 12000, 500));
-		p.get(0).addBid(new Bid(clients.get(0), 24000, 32000));
-		p.get(0).addBid(new Bid(clients.get(0), 35000, 36000));
-		p.get(0).addBid(new Bid(clients.get(0), 40000, 45000));
 		p.add(new Item("Mona Lisa", 18000, 1000));
 		p.add(new Item("American Gothic", 9000, 200));
 		p.add(new Item("The Storm on the Sea of Galilee", 6000, 100));
 		p.add(new Item("The Last Supper", 50000, 5000));
-
 	}
 
 	public static int mainMenu() {
 		Scanner scan = new Scanner(System.in);
 
+		
 		while (true) {
+			
+			boolean AM=true;
+			
+			String hourString=""+timeHours;
+			String openString="The auction house is open.";
+			
+			if (timeHours>=17 | timeHours<9) {
+				openString="The auction house is closed.";
+			}
+						
+			String amPM = "AM";
+			
+			if (timeHours>12) {
+				AM=false;
+				hourString=""+ (timeHours-12); // convert to AM / PM system
+			}
+			
+			if (AM==false) {
+				amPM="PM";
+			} 
+			
+			String minString=""+timeMinutes;
+
+			if (minString.length()==1) {
+				minString="0" + minString; // make minutes 0-9 display correctly
+			}
+			
+			System.out.println("It is currently " + hourString + ":" + minString + " " + amPM + ". " + openString);
 			System.out.println("Please enter the number that corresponds with the action you would like to perform");
-			System.out.println("1: Load sample data (deprecated)");
+			System.out.println("0: ADVANCE TIME/BIDS (bids are randomly generated and automated)");
+			System.out.println("1: Load CUSTOMERS from file (deprecated)");
 			System.out.println("2: Process the backlogged data");
 			System.out.println("3: Log in as administrator");
 			System.out.println("4: Log in as customer");
 			System.out.println("5: Load Database");
 			System.out.println("6: Save Database");
-			System.out.println("7: Exit the application");
+			System.out.println("7: Exit the application");	
+      
 			int select = -1;
 			try {
 				select = scan.nextInt();
 			} catch (InputMismatchException ime) {
 				System.out.println("You did not enter an integer value");
 			}
-			if (select == 1 || select == 2 || select == 3 || select == 4 || select == 5)
+			if (select == 1 || select == 2 || select == 3 || select == 4 || select == 5 || select == 0)
 				return select;
 			else
 				System.out.println("You did not enter a valid selection");
@@ -248,63 +396,213 @@ public class JavaSales {
 		}
 	}
 
-	public static void adminMenu(ArrayList<Item> paint, ArrayList<Customer> clients, ArrayList<Item> completedAuctions) {
-		Scanner scan = new Scanner(System.in);
+	public static void adminMenu(ArrayList<Item> paint, ArrayList<Customer> clients, ArrayList<Item> completed) {
+        Scanner scan = new Scanner(System.in);
 
-		int select = -1;
-		while(select != 6)
-		{
-			System.out.println("Please enter the number that corresponds with the action you would like to perform");
-			System.out.println("1: List current ongoing auctions");
-			System.out.println("2: Choose an ongoing auction and check the bidding history");
-			System.out.println("3: List information about completed auctions");
-			System.out.println("4: Summary data of winning bids");
-			System.out.println("5: Add and activate a new auction");
-			System.out.println("6: Return to main menu");
-			
-			try {
-				select = scan.nextInt();
-			} catch (InputMismatchException ime) {
-				System.out.println("You did not enter an integer value");
+
+        int select = -1;
+        while(select != 7)
+        {
+            System.out.println("Please enter the number that corresponds with the action you would like to perform");
+            System.out.println("1: List current ongoing auctions");
+            System.out.println("2: Choose an ongoing auction and check the bidding history");
+            System.out.println("3: List information about completed auctions");
+            System.out.println("4: Summary data of winning bids");
+            System.out.println("5: Add and activate a new auction");
+            System.out.println("6: Close an auction");
+            System.out.println("7: Return to main menu");
+            try {
+                select = scan.nextInt();
+            } catch (InputMismatchException ime) {
+                System.out.println("You did not enter an integer value");
+            }
+            if (select == 1)
+            {
+                listAuctions(paint);
+            }
+            else if(select == 2)
+            {
+                Item item = selectAuction(paint);
+                item.checkBiddingHistory();
+            }
+            else if(select == 3)
+            {
+                listCompletedAuctions(completed);
+            }
+            else if(select == 4)
+            {
+                winningSummary(completed);
+            }
+            else if(select == 5)
+            {
+                Item item = newAuction();
+                if(item != null)
+                {
+                    paint.add(item);
+                }
+            }
+            else if(select == 6) 
+            {
+                closeAuction(paint, completed);
+            }
+            else if(select != 7)
+            {
+                System.out.println("You did not enter a valid selection");
+            }
+        }
+    }
+	
+	public static void winningSummary(ArrayList<Item> completed) {
+        NumberFormat nf = NumberFormat.getCurrencyInstance();
+        double count = 0;
+        System.out.println("Completed Auctions:\n");
+        for(int i = 0; i < completed.size(); i++) {
+            count += completed.get(i).getBids().peek().getBid();
+            System.out.println(completed.get(i).getName());
+            System.out.println("Winner: " + completed.get(i).getBids().peek().getCust().getName());
+            System.out.println("Price: " + nf.format(completed.get(i).getBids().peek().getBid()));
+            System.out.println();
+        }
+        
+        System.out.println("The total expected payment for all of the completed auctions is " + nf.format(count));
+    }
+	
+	public static void closeAuction(ArrayList<Item> paint, ArrayList<Item> completed) {
+        Scanner scan = new Scanner(System.in);
+        for(int i = 0; i < paint.size(); i++) {
+            System.out.println((i+1) + ": " + paint.get(i).getName());
+        }
+        System.out.println("Please select which auction you would like to close");
+        int select = -1;
+        try {
+            select = scan.nextInt()-1;
+        } catch (Exception e) {
+            System.out.println("An error occured with your selection");
+        }
+        System.out.println(paint.get(select).getName() + " has been removed from the auction");
+        completed.add(paint.get(select));
+        paint.remove(select);
+    }
+
+	public static void incrementTime() {
+		timeMinutes+=30;
+		if(timeMinutes>=60) {
+			if (timeHours<24) {
+				timeHours=timeHours+1;
+				timeMinutes=0;
 			}
-			if (select == 1)
-			{
-				listAuctions(paint);
-			}
-			else if(select == 2)
-			{
-				Item item = selectAuction(paint);
-				item.checkBiddingHistory();
-			}
-			else if(select == 3)
-			{
-				listCompletedAuctions(completedAuctions);
-			}
-			else if(select == 4)
-			{
-				listWinningBids(paint);
-			}
-			else if(select == 5)
-			{
-				Item item = newAuction();
-				if(item != null)
-				{
-					paint.add(item);
-					System.out.println("Auction successfully created");
-				}
-			}
-			else if(select != 6)
-			{
-				System.out.println("You did not enter a valid selection");
+			else {
+				timeHours=1;
+				timeMinutes=0;
 			}
 		}
 	}
+	
+	public static void generateBids(ArrayList<Item> items, ArrayList<Customer> customers, Queue<QueuedBid> queuedBids) {
+		// this method will generate a random bid for each item from an eligible customer (customer w/o bid for that same item)
+		for (int a=0;a<items.size();a++) {
+			Item painting=items.get(a);
+			ArrayList<Bid> bidsMade = new ArrayList<Bid>();
+			Stack<Bid> cloneStack=painting.getBids().clone();
+			while (!cloneStack.isEmpty()) {
+				bidsMade.add(cloneStack.pop());
+			}
+			
+			ArrayList<Customer> eligibleBidders=new ArrayList<Customer>();
+			for (int i=0;i<customers.size();i++) {
+				boolean canBid=true;
+				for (int b=0;b<bidsMade.size();b++) {
+					if (bidsMade.get(b).getCust().equals(customers.get(i))) {
+						canBid=false;
+						break;
+					}
+				}
+				if (canBid) {
+					eligibleBidders.add(customers.get(i));
+				}
+			}
 
+			Random rand=new Random();
+			
+			Customer randomBidder=eligibleBidders.get(rand.nextInt(eligibleBidders.size()));
+			
+			boolean willBidUp=true;
+			double maxBid;
+			double bid;
+
+			
+			if (willBidUp) {
+				bid=painting.getMinimumBid();
+				if (bidsMade.size()>0) {
+					bid=painting.getBids().peek().getBid() + painting.getIncrement();
+				}
+				maxBid=bid + ((rand.nextInt(20)+1)*painting.getIncrement()); 
+				// formula for calculating max bid
+			}
+			else {
+				bid=painting.getMinimumBid() - rand.nextInt((int) Math.ceil(painting.getMinimumBid()/painting.getIncrement()));
+				maxBid=bid; // yeah
+				// formula for making up some bid under the min bid so their bid can be tossed away
+			}
+			if (timeHours>8 & timeHours<17) { // check to make sure we're open
+				processBid(painting,randomBidder,bid,maxBid); // send info to another method to handle what actually happens
+				//it's another method because this way i can use it for processing backlogs too
+			}
+			else { //if we aren't open, add it to the processing queue for tomorrow 
+				queuedBids.enqueue(new QueuedBid(painting,randomBidder,bid,maxBid));
+			}
+			
+		}
+	}
+	
+	public static void processBid(Item painting, Customer bidder, double bid, double maxBid) {
+		ArrayList<Bid> bidsMade = new ArrayList<Bid>();
+		Stack<Bid> cloneStack=painting.getBids().clone();
+		while (!cloneStack.isEmpty()) {
+			bidsMade.add(cloneStack.pop());
+		}
+		if (bid>=painting.getMinimumBid()) {
+			//now let's make sure its more than current highest bidder
+			if (bidsMade.size()>0) {
+				if (maxBid>painting.getBids().peek().getMaxBid()) {
+					bid(painting,bidder,painting.getBids().peek().getMaxBid(),maxBid); //finalize the bid
+					System.out.println(bidder.getName() + " has successfully bid " 
+					+ NumberFormat.getCurrencyInstance().format(bid) + " on " + painting.getName() 
+					+ " with a maximum bid of " + NumberFormat.getCurrencyInstance().format(maxBid));
+				}
+				else {
+					//otherwise we throw it out and change the highest bidders current bid to match (change as in add another bid)
+					//whoever tried to bid's max bid
+					System.out.println(bidder.getName() + " tried to bid " 
+							+ NumberFormat.getCurrencyInstance().format(bid) + " on " + painting.getName() 
+							+ " with a maximum bid of " + NumberFormat.getCurrencyInstance().format(maxBid) + 
+							" but failed because a previous bidder's max bid was higher at " + NumberFormat.getCurrencyInstance().format(bidsMade.get(bidsMade.size()-1).getMaxBid() ));
+					
+					Bid prevBid=painting.getBids().peek();
+					if (bid>prevBid.getBid()) {
+						painting.addBid(new Bid(prevBid.getCust(),maxBid,prevBid.getMaxBid()));
+					}
+					//.setBid(maxBid);
+				}
+			}
+			else {
+				bid(painting,bidder,bid,maxBid); //finalize the bid
+				System.out.println(bidder.getName() + " has successfully bid " 
+				+ NumberFormat.getCurrencyInstance().format(bid) + " on " + painting.getName() 
+				+ " with a maximum bid of " + NumberFormat.getCurrencyInstance().format(maxBid));
+			}
+		}
+		else {
+			System.out.println(bidder.getName() + " tried to bid " + NumberFormat.getCurrencyInstance().format(bid) +
+			" on " + painting.getName() + " but the bid was thrown out because it was less than the minimum for the item.");
+		}
+	}
+	
 	public static void custMenu(Customer cust, ArrayList<Item> paint) {
 		Scanner scan = new Scanner(System.in);
 
 		int select = -1;
-		while(select != 5)
+		while(select != 4)
 		{
 			System.out.println("Please enter the number that corresponds with the action you would like to perform");
 			System.out.println("1: Check my active bids");
@@ -368,9 +666,10 @@ public class JavaSales {
 	public static Customer newCustomer()
 	{
 		Scanner scan = new Scanner(System.in);
-		System.out.println("Input your first and last name:");
+		System.out.println("Input your first name:");
 		String name = scan.nextLine();
-		scan.nextLine();
+		System.out.println("Input your last name:");
+		name = name + " " + scan.nextLine();
 		System.out.println("Input your username:");
 		String username = scan.nextLine();
 		System.out.println("Input your password:");
@@ -391,7 +690,7 @@ public class JavaSales {
 		
 		while(temp.isEmpty() == false)
 		{
-			Bid bid = painting.getBids().pop();
+			Bid bid = temp.pop();
 			if(bid.getCust().getCustID() == cust.getCustID())
 			{
 				uniqueCustomerBids.add(bid);
@@ -432,7 +731,16 @@ public class JavaSales {
 		{
 			System.out.println("Enter a legal bid value:");
 			double myBid = scan.nextDouble();
-			
+      /*
+
+			if (myBid >= minBid) {
+				painting.addBid(new Bid(cust, myBid, 9999999));													
+				System.out.println("Bid successful!");
+			} else {
+				System.out.println("You must bid at least "
+						+ NumberFormat.getCurrencyInstance().format(minBid));
+
+			*/
 			Bid topBid = null;
 			if(painting.getBids().isEmpty() == false)
 			{
@@ -456,6 +764,14 @@ public class JavaSales {
 				painting.addBid(new Bid(cust, myBid, maxBid));
 			}
 		}
+	}
+
+	public static void bid(Item paint, Customer cust, double minBid, double maxBid) 
+	// method overload for automation
+	{
+		Bid bid = new Bid(cust,minBid,maxBid);
+		//cust.addBid(bid);
+		paint.addBid(bid);
 	}
 	
 	public static void listAuctions(ArrayList<Item> paint)
@@ -503,13 +819,15 @@ public class JavaSales {
 		
 		for(int i = 0; i < paint.size(); i++)
 		{
-			System.out.println(paint.get(i).getName());
+			
 			Stack<Bid> bids = paint.get(i).getBids().clone();
+			
 			while(bids.isEmpty() == false)
 			{
 				Bid bid = bids.pop();
 				if(cust.getCustID() == bid.getCust().getCustID())
 				{
+					System.out.println(paint.get(i).getName());
 					System.out.println(bid.toString());
 					System.out.println("");
 				}
