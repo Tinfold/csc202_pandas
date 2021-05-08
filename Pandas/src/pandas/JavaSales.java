@@ -6,6 +6,11 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -30,8 +35,9 @@ public class JavaSales {
 		Queue<QueuedBid> queuedBids = new Queue<QueuedBid>();
 		
 		Credentials adminLogin = new Credentials("admin", "password");
+
 		int sentinel = 0;
-		while (sentinel != 5) {
+		while (sentinel != 7) {
 			int selection = mainMenu();
 			if (selection == 1) {
 
@@ -63,6 +69,13 @@ public class JavaSales {
 				else {
 					System.out.println("You must process the backlogged data before resuming business as usual.");
 				}	
+			else if(selection == 5)
+			{
+				loadDatabase(clients, paint);
+			}
+			else if(selection == 6)
+			{
+				saveDatabase(clients, paint);
 			}
 
 			System.out.println();
@@ -93,13 +106,125 @@ public class JavaSales {
 			System.out.println("You threw an exception. ");
 		}
 		return in;
+  }
+    
+	public static Connection connectToDatabase()
+	{
+		Scanner scan = new Scanner(System.in);
+		System.out.println("What is the username for the database?");
+		String user = scan.nextLine();
+		System.out.println("What is the password?");
+		String pass = scan.nextLine();
+		return JDBCConnection.connect(JDBCConnection.MYSQLLOCAL,user,pass);
 	}
 	
-	public static void auctionSetup(ArrayList<Item> p, ArrayList<Customer> clients) {
-
-
+	public static void loadDatabase(ArrayList<Customer> custs, ArrayList<Item> auctions)
+	{
+		Connection con = connectToDatabase();
+		Statement stmt;
+		try {
+			stmt = con.createStatement();
+			
+			String queryCustomer = "select * from customers";
+			ResultSet rs = stmt.executeQuery(queryCustomer);
+			
+			while(rs.next())
+			{
+				int custId = rs.getInt(1);
+				String name = rs.getString(2);
+				String username = rs.getString(3);
+				String password = rs.getString(4);
+				custs.add(new Customer(name, username, password, custId));
+			}
+			
+			String queryItems = "select * from items";
+			ResultSet rs2 = stmt.executeQuery(queryItems);
+			while(rs2.next())
+			{
+				String name = rs2.getString(1);
+				double minBid = rs2.getDouble(2);
+				double increment = rs2.getDouble(3);
+				auctions.add(new Item(name, minBid, increment));
+			}
+			
+			String queryBids = "select * from bids";
+			ResultSet rs3 = stmt.executeQuery(queryBids);
+			while(rs3.next())
+			{
+				double bid = rs3.getDouble(1);
+				double maxBid = rs3.getDouble(2);
+				int custId = rs3.getInt(3);
+				String itemName = rs3.getString(4);
+				
+				Bid newBid = null;
+				for(int i = 0; i < custs.size(); i++)
+				{
+					if(custs.get(i).getCustID() == custId)
+					{
+						newBid = new Bid(custs.get(i), bid, maxBid);
+						custs.get(i).getBids().add(newBid);
+					}
+				}
+				
+				for(int i = 0; i < auctions.size(); i++)
+				{
+					if(auctions.get(i).getName().equals(itemName) && newBid != null)
+					{
+						auctions.get(i).addBid(newBid);
+					}
+				}
+			}
+			
+			con.close();
+			stmt.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
+	public static void saveDatabase(ArrayList<Customer> custs, ArrayList<Item> auctions)
+	{
+		Connection con = connectToDatabase();
+		
+		Statement stmt;
+		try 
+		{
+			stmt = con.createStatement();
+
+			stmt.execute("delete * from customers");
+			stmt.execute("delete * from bids");
+			stmt.execute("delete * from auctions");
+			
+			for(int i = 0; i < custs.size(); i++)
+			{
+				Customer cust = custs.get(i);
+				String insert = "insert into customers values(" + cust.getCustID() + "," + cust.getName() + "," + cust.getLogin().getU() + "," + cust.getLogin().getP() + ")";
+				stmt.execute(insert);
+			}
+			
+			for(int i = 0; i < auctions.size(); i++)
+			{
+				Item item = auctions.get(i);
+				String insert = "insert into items values(" + item.getName() + "," + item.getMinimumBid() + "," + item.getIncrement() + ")";
+				stmt.execute(insert);
+				
+				Stack<Bid> bids = item.getBids().clone();
+				while(bids.isEmpty() == false)
+				{
+					Bid bid = bids.pop();
+					insert = "insert into bids values(" + bid.getBid() + "," + bid.getMaxBid() + "," + bid.getCust().getCustID() + "," + item.getName() + ")";
+					stmt.execute(insert);
+				}
+			}
+			con.close();
+			stmt.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
 	
 	public static ArrayList<Customer> inputData() {
 		ArrayList<Customer> customers = new ArrayList<Customer>();
@@ -163,6 +288,10 @@ public class JavaSales {
 	
 	
 	public static void auctionSetup(ArrayList<Item> p) {
+		System.out.println("This method is deprecated, please load data from the database instead.");
+		Customer testCustomer = new Customer("John Doe", "jdoe", "password");
+
+		clients.add(testCustomer);
 		p.add(new Item("The Starry Night", 12000, 500));
 		p.add(new Item("Mona Lisa", 18000, 1000));
 		p.add(new Item("American Gothic", 9000, 200));
@@ -205,12 +334,14 @@ public class JavaSales {
 			System.out.println("It is currently " + hourString + ":" + minString + " " + amPM + ". " + openString);
 			System.out.println("Please enter the number that corresponds with the action you would like to perform");
 			System.out.println("0: ADVANCE TIME/BIDS (bids are randomly generated and automated)");
-			System.out.println("1: Load CUSTOMERS from file (Do this first and once)");
+			System.out.println("1: Load CUSTOMERS from file (deprecated)");
 			System.out.println("2: Process the backlogged data");
 			System.out.println("3: Log in as administrator");
 			System.out.println("4: Log in as customer");
-			System.out.println("5: Exit the application");
-			
+			System.out.println("5: Load Database");
+			System.out.println("6: Save Database");
+			System.out.println("7: Exit the application");	
+      
 			int select = -1;
 			try {
 				select = scan.nextInt();
