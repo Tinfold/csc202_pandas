@@ -25,7 +25,12 @@ public class Customer
 		currentCustID++;
 	}
 
-	
+	public Customer(String name, String username, String password, int custId)
+	{
+		this.name = name;
+		this.login = new Credentials(username, password);
+		this.custID = custId;
+	}
 	
 	public Credentials getLogin() {
 		return login;
