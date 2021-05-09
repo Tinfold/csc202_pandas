@@ -20,12 +20,26 @@ import java.util.Scanner;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 
+/**
+ * @author jholl
+ * This class is the runner program for our auction house project
+ */
 public class JavaSales {
 
 
+	/**
+	 * Sets hours to 9
+	 */
 	public static int timeHours=9;
+	/**
+	 * Sets minutes to 0
+	 */
 	public static int timeMinutes=0;
 	
+	/**
+	 * Main method of the program
+	 * Contains all decision loops and calls to other methods
+	 */
 	public static void main(String[] args) 
 	{		
 		ArrayList<Item> paint = new ArrayList<>();
@@ -89,6 +103,10 @@ public class JavaSales {
 
 	}
 
+	/**
+	 * Returns bufferedreader object used for opening file locations
+	 * @return BufferedReader object
+	 */
 	public static BufferedReader openRead() {
 		Frame f = new Frame();
 		// decide from where to read the file
@@ -115,6 +133,10 @@ public class JavaSales {
 		return in;
   }
     
+	/**
+	 * Returns a connection to local database
+	 * @return Connection to local database
+	 */
 	public static Connection connectToDatabase()
 	{
 		Scanner scan = new Scanner(System.in);
@@ -125,6 +147,11 @@ public class JavaSales {
 		return JDBCConnection.connect(JDBCConnection.MYSQLLOCAL,user,pass);
 	}
 	
+	/**
+	 * Loads data from database
+	 * @param custs ArrayList of customers to be added to
+	 * @param auctions ArrayList of items to be added to
+	 */
 	public static void loadDatabase(ArrayList<Customer> custs, ArrayList<Item> auctions)
 	{
 		Connection con = connectToDatabase();
@@ -190,6 +217,11 @@ public class JavaSales {
 		}
 	}
 	
+	/**
+	 * Saves database
+	 * @param custs ArrayList of customers from the auction
+	 * @param auctions ArrayList of items from the auction
+	 */
 	public static void saveDatabase(ArrayList<Customer> custs, ArrayList<Item> auctions)
 	{
 		Connection con = connectToDatabase();
@@ -233,6 +265,10 @@ public class JavaSales {
 	}
 
 	
+	/**
+	 * Opens file location and reads in data from file
+	 * @return ArrayList of customers created from file
+	 */
 	public static ArrayList<Customer> inputData() {
 		ArrayList<Customer> customers = new ArrayList<Customer>();
 		
@@ -294,6 +330,10 @@ public class JavaSales {
 	
 	
 	
+	/**
+	 * Old method that was used for early testing
+	 * @param p ArrayList of items in the auction
+	 */
 	public static void auctionSetup(ArrayList<Item> p) {
 		System.out.println("This method is deprecated, please load data from the database instead.");
 		Customer testCustomer = new Customer("John Doe", "jdoe", "password");
@@ -305,6 +345,10 @@ public class JavaSales {
 		p.add(new Item("The Last Supper", 50000, 5000));
 	}
 
+	/**
+	 * Displays main menu for user decision
+	 * @return integer corresponding to user selection
+	 */
 	public static int mainMenu() {
 		Scanner scan = new Scanner(System.in);
 
@@ -361,6 +405,11 @@ public class JavaSales {
 		}
 	}
 
+	/**
+	 * Displays customer login menu and validates login
+	 * @param clients ArrayList of customers to be checked against
+	 * @param paint ArrayList of items in the auction
+	 */
 	public static void custLMenu(ArrayList<Customer> clients, ArrayList<Item> paint) {
 		Scanner scan = new Scanner(System.in);
 
@@ -402,6 +451,12 @@ public class JavaSales {
 		}
 	}
 
+	/**
+	 * Displays admin login menu and validates login
+	 * @param paint ArrayList of items in the auction
+	 * @param clients ArrayList of customers participating in the auction
+	 * @param completed ArrayList of closed auction items
+	 */
 	public static void adminMenu(ArrayList<Item> paint, ArrayList<Customer> clients, ArrayList<Item> completed) {
         Scanner scan = new Scanner(System.in);
 
@@ -458,6 +513,10 @@ public class JavaSales {
         }
     }
 	
+	/**
+	 * Displays information about completed auctions
+	 * @param completed ArrayList of completed auction items
+	 */
 	public static void winningSummary(ArrayList<Item> completed) {
         NumberFormat nf = NumberFormat.getCurrencyInstance();
         double count = 0;
@@ -473,6 +532,11 @@ public class JavaSales {
         System.out.println("The total expected payment for all of the completed auctions is " + nf.format(count));
     }
 	
+	/**
+	 * Closes an auction
+	 * @param paint ArrayList of items in the auction
+	 * @param completed ArrayList of completed auction items
+	 */
 	public static void closeAuction(ArrayList<Item> paint, ArrayList<Item> completed) {
         Scanner scan = new Scanner(System.in);
         for(int i = 0; i < paint.size(); i++) {
@@ -490,6 +554,9 @@ public class JavaSales {
         paint.remove(select);
     }
 
+	/**
+	 * Moves time forward
+	 */
 	public static void incrementTime() {
 		timeMinutes+=30;
 		if(timeMinutes>=60) {
@@ -504,6 +571,12 @@ public class JavaSales {
 		}
 	}
 	
+	/**
+	 * Generates a random bid for each item for customers that have no bids on that item
+	 * @param items ArrayList of items in the auction
+	 * @param customers ArrayList of customers participating in the auction
+	 * @param queuedBids Queue of bids to be processed
+	 */
 	public static void generateBids(ArrayList<Item> items, ArrayList<Customer> customers, Queue<QueuedBid> queuedBids) {
 		// this method will generate a random bid for each item from an eligible customer (customer w/o bid for that same item)
 		for (int a=0;a<items.size();a++) {
@@ -561,6 +634,13 @@ public class JavaSales {
 		}
 	}
 	
+	/**
+	 * Processes bids
+	 * @param painting Item being checked
+	 * @param bidder Customer making bid
+	 * @param bid value of bid
+	 * @param maxBid maximum value of bid
+	 */
 	public static void processBid(Item painting, Customer bidder, double bid, double maxBid) {
 		ArrayList<Bid> bidsMade = new ArrayList<Bid>();
 		Stack<Bid> cloneStack=painting.getBids().clone();
@@ -604,6 +684,11 @@ public class JavaSales {
 		}
 	}
 	
+	/**
+	 * Displays customer action menu
+	 * @param cust Customer that is logged in
+	 * @param paint ArrayList of items in the auction
+	 */
 	public static void custMenu(Customer cust, ArrayList<Item> paint) {
 		Scanner scan = new Scanner(System.in);
 
@@ -639,6 +724,11 @@ public class JavaSales {
 		}
 	}
 	
+	/**
+	 * Validates admin login
+	 * @param adminPassword password for admin login
+	 * @return boolean indicating successful or failed login
+	 */
 	public static boolean attemptAdminLogIn(Credentials adminPassword) {
 		Scanner scan = new Scanner(System.in);
 		System.out.println("Please input the admin password.");
@@ -651,6 +741,11 @@ public class JavaSales {
 		}
 	}
 
+	/**
+	 * Validates customer login
+	 * @param clients ArrayList of customers participating in the auction
+	 * @return Customer that successfully logs in
+	 */
 	public static Customer attemptLogIn(ArrayList<Customer> clients) {
 		Scanner scan = new Scanner(System.in);
 		System.out.println("Please input your username.");
@@ -669,6 +764,10 @@ public class JavaSales {
 		return null;
 	}
 	
+	/**
+	 * Creates new customer from given information
+	 * @return Customer that is created from user input
+	 */
 	public static Customer newCustomer()
 	{
 		Scanner scan = new Scanner(System.in);
@@ -684,6 +783,11 @@ public class JavaSales {
 		return new Customer(name, username, password);
 	}
 	
+	/**
+	 * Bids on an item
+	 * @param paint ArrayList of items in the auction
+	 * @param cust Customer bidding on an item
+	 */
 	public static void bid(ArrayList<Item> paint, Customer cust)
 	{
 		Scanner scan = new Scanner(System.in);
@@ -772,6 +876,13 @@ public class JavaSales {
 		}
 	}
 
+	/**
+	 * Bids on an item
+	 * @param paint Item to be bid on
+	 * @param cust Customer bidding
+	 * @param minBid minimum bid
+	 * @param maxBid maximum bid
+	 */
 	public static void bid(Item paint, Customer cust, double minBid, double maxBid) 
 	// method overload for automation
 	{
@@ -780,6 +891,10 @@ public class JavaSales {
 		paint.addBid(bid);
 	}
 	
+	/**
+	 * Displays ongoing auctions
+	 * @param paint ArrayList of items in auction
+	 */
 	public static void listAuctions(ArrayList<Item> paint)
 	{
 		if(paint.isEmpty())
@@ -792,6 +907,11 @@ public class JavaSales {
 		}
 	}
 	
+	/**
+	 * Returns a particular auction item
+	 * @param paint ArrayList of items in the auction
+	 * @return user selected Item in the auction
+	 */
 	public static Item selectAuction(ArrayList<Item> paint)
 	{
 		Scanner scan = new Scanner(System.in);
@@ -811,6 +931,11 @@ public class JavaSales {
 		}
 	}
 	
+	/**
+	 * Lists all of the bids for a particular customer
+	 * @param paint ArrayList of items in the auction
+	 * @param cust Customer that is logged in
+	 */
 	public static void listCustomerBids(ArrayList<Item> paint, Customer cust)
 	{
 		System.out.println("Your current bids are:");
@@ -841,6 +966,10 @@ public class JavaSales {
 		}
 	}
 	
+	/**
+	 * Lists all finished auctions
+	 * @param auctions ArrayList of completed auctions
+	 */
 	public static void listCompletedAuctions(ArrayList<Item> auctions)
 	{
 		if(auctions.isEmpty())
@@ -856,6 +985,11 @@ public class JavaSales {
 		}
 	}
 	
+	/**
+	 * Lists all of a customer's winning bids
+	 * @param auctions ArrayList of items in the auction
+	 * @param cust Customer that is logged in
+	 */
 	public static void checkWinningBids(ArrayList<Item> auctions, Customer cust)
 	{
 		System.out.println("Your winning bids are:");
@@ -880,6 +1014,10 @@ public class JavaSales {
 		}
 	}
 	
+	/**
+	 * Lists the winning bids on all auctions
+	 * @param auctions ArrayList of items in the auction
+	 */
 	public static void listWinningBids(ArrayList<Item> auctions)
 	{
 		if(auctions.isEmpty())
@@ -900,6 +1038,10 @@ public class JavaSales {
 		}
 	}
 		
+	/**
+	 * Creates a new auction from admin inputted data
+	 * @return Item created from admin input
+	 */
 	public static Item newAuction()
 	{
 		Scanner scan = new Scanner(System.in);
@@ -914,6 +1056,7 @@ public class JavaSales {
 	}
 	
 	//overload for junit test
+
 	public static Item newAuction(String name, double minBid, double increment)
 	{		
 		return new Item(name, minBid, increment);
